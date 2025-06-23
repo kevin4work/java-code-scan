@@ -74,9 +74,9 @@ jobs:
           # Scan the target branch code, output in SARIF format, and save to /tmp/lacework-scan-target.json 
           lacework sca scan ./ -f sarif -o /tmp/lacework-scan-target.json --save-results=true | tee /tmp/lacework-summary.txt
           # found critical vulnerability count
-          critical_value=$(grep -oP 'Critical:\s*\K\d+' "$filename" | head -1)
+          critical_value=$(grep -oP 'Critical:\s*\K\d+' '/tmp/lacework-summary.txt' | head -1)
           echo "Found crtical vulnereabilities: $critical_value"
-          if [ $critical_value >= 2 ]; then
+          if [ $critical_value >= 1 ]; then
             exit 1
           fi
           
