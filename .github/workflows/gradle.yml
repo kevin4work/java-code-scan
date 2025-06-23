@@ -82,11 +82,17 @@ jobs:
 
       # Step 5: Run the Lacework SCA scan on the target branch and save the output 
       - name: Run Lacework SCA Scan on Target Branch 
-        run: lacework sca scan ./ -f sarif -o /tmp/lacework-scan-target.json 
-        # Scan the target branch code, output in SARIF format, and save to /tmp/lacework-scan-target.json 
+        run: | 
+          # Scan the target branch code, output in SARIF format, and save to /tmp/lacework-scan-target.json 
+          lacework sca scan ./ -f sarif -o /tmp/lacework-scan-target.json --save-results=true
+          # print the results
+          less /tmp/lacework-scan-target.json
 
+      
       # Step 6: Compare results from the two scans and generate SARIF output 
       - name: Compare JSON Files and Generate SARIF 
-        run: lacework sca compare --new /tmp/lacework-scan-source.json --old /tmp/lacework-scan-target.json --formats sarif -o /tmp/lacework-comparison.sarif 
-        # Compare the JSON outputs from the source and target branches 
-        # Generate the comparison result in SARIF format and save to /tmp/lacework-comparison.sarif 
+        run: | 
+          # Compare the JSON outputs from the source and target branches 
+          lacework sca compare --new /tmp/lacework-scan-source.json --old /tmp/lacework-scan-target.json --formats sarif -o /tmp/lacework-comparison.sarif 
+          # print the results
+          less /tmp/lacework-comparison.sarif
