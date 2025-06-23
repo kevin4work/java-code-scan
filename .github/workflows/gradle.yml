@@ -69,25 +69,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub token for authentication 
 
       # Step 3: Run the Lacework SCA scan on the source branch and save the output 
-      - name: Run Lacework SCA Scan on Source Branch 
-        run: lacework sca scan ./ -f sarif -o /tmp/lacework-scan-source.json 
-        # Scan the source branch code, output in SARIF format, and save to /tmp/lacework-scan-source.json 
-
-      # Step 4: Check out the target branch of the pull request 
-      - name: Checkout target branch 
-        uses: actions/checkout@v3  # Use the checkout action to pull the target branch code 
-        with: 
-          ref: ${{ github.event.pull_request.base.ref }}  # Reference the target branch of the pull request 
-          token: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub token for authentication 
-
-      # Step 5: Run the Lacework SCA scan on the target branch and save the output 
-      - name: Run Lacework SCA Scan on Target Branch 
+      - name: Run Lacework SCA Scan on source Branch 
         run: | 
           # Scan the target branch code, output in SARIF format, and save to /tmp/lacework-scan-target.json 
           lacework sca scan ./ -f sarif -o /tmp/lacework-scan-target.json --save-results=true | tee /tmp/lacework-summary.txt
-          # print summary
-          echo 'printing summary...'
-          less /tmp/lacework-summary.txt
+          # found critical vulnerability count
+          critical_value=$(grep -oP 'Critical:\s*\K\d+' "$filename" | head -1)
+          echo 'Found crtical vulnereabilities: $critical_value'
+          if [ $critical_value >= 1 ]; then
+            exit 1
+          fi
+          
           
           
 
