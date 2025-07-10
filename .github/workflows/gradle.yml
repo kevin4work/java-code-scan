@@ -62,8 +62,7 @@ jobs:
             --env CI_COMMIT_SHA \
             --env CI_PIPELINE_IID \
             --mount type=bind,source=$PWD,target=/scan \
-            registry.fortidevsec.forticloud.com/fdevsec_sast:latest main s \ 
-            --org-id 64abf5b5-8f71-4a40-abc4-55d9da1f1147 --app-id 23ea3564-79fc-4cc0-bc5b-c131e3d70ac5
+            registry.fortidevsec.forticloud.com/fdevsec_sast:latest main s --org-id 64abf5b5-8f71-4a40-abc4-55d9da1f1147 --app-id 23ea3564-79fc-4cc0-bc5b-c131e3d70ac5
 
       
           
