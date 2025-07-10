@@ -47,40 +47,25 @@ jobs:
     # - name: Build with Gradle 8.9
     #   run: gradle build
 
-  sca_scan_job: # Lacework SCA Scan
+  sca_scan_job: # DevSec Scan
     runs-on: ubuntu-latest  # The job runs on the latest Ubuntu environment 
 
     steps: 
-      # Step 1: Install the Lacework CLI and SCA component 
-      - name: Install Lacework CLI 
-        run: | 
-          # Download and install the Lacework CLI using a shell script 
-          curl https://raw.githubusercontent.com/lacework/go-sdk/main/cli/install.sh | bash 
-          # Configure the Lacework CLI with account, API key, and secret from GitHub secrets 
-          lacework configure -a ${{ secrets.LW_ACCOUNT }}.lacework.net -k ${{ secrets.LW_API_KEY }} -s ${{ secrets.LW_API_SECRET }} --noninteractive 
-          # Install the Software Composition Analysis (SCA) component 
-          lacework component install sca 
+      # DevSec Scan 
+      - uses: actions/checkout@v2
+      - name: SAST
+        run: |
+          docker run --pull always --rm \
+            --env GITLAB_CI \
+            --env CI_BUILD_ID \
+            --env CI_DEFAULT_BRANCH \
+            --env CI_COMMIT_SHA \
+            --env CI_PIPELINE_IID \
+            --mount type=bind,source=$PWD,target=/scan \
+            registry.fortidevsec.forticloud.com/fdevsec_sast:latest main s \ 
+            --org-id 64abf5b5-8f71-4a40-abc4-55d9da1f1147 --app-id 23ea3564-79fc-4cc0-bc5b-c131e3d70ac5
 
-      # Step 2: Check out the source branch (head of the pull request) 
-      - name: Checkout source branch 
-        uses: actions/checkout@v3  # Use the checkout action to pull the source branch code 
-        with: 
-          ref: ${{ github.event.pull_request.head.ref }}  # Reference the source branch of the pull request 
-          token: ${{ secrets.GITHUB_TOKEN }}  # Use the GitHub token for authentication 
-
-      # Step 3: Run the Lacework SCA scan on the source branch and save the output 
-      - name: Run Lacework SCA Scan on source Branch 
-        run: | 
-          # Scan the target branch code, output in SARIF format, and save to /tmp/lacework-scan-target.json 
-          lacework sca scan ./ -f sarif -o /tmp/lacework-scan-target.json --save-results=true | tee /tmp/lacework-summary.txt
-          # found critical and high vulnerability count
-          critical_count=$(grep -oP 'Critical:\s*\K\d+' '/tmp/lacework-summary.txt' | head -1)
-          high_count=$(grep -oP 'High:\s*\K\d+' '/tmp/lacework-summary.txt' | head -1)
-          echo "Found crtical vulnereabilities: $critical_count"
-          echo "Found high vulnereabilities: $high_count"
-          if [ $critical_count -ge 1 ] || [ $high_count -ge 1 ]; then
-            exit 1
-          fi
+      
           
           
           
